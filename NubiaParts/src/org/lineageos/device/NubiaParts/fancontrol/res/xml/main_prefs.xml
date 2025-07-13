@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/fan_summary"
+    android:id="@+id/root_view" >
+
+    <com.android.settingslib.widget.MainSwitchPreference
+        android:key="fan_main_switch"
+        android:title="@string/fan_main_switch_title"
+        android:defaultValue="false" />
+
+    <SeekBarPreference
+        android:key="user_fan_speed"
+        android:title="@string/user_fan_speed_title"
+        android:defaultValue="2"
+        android:max="5"
+        android:dependency="fan_main_switch" />
+
+    <androidx.preference.SwitchPreferenceCompat
+        android:key="charging_boost"
+        android:title="@string/charging_boost_title"
+        android:summary="@string/charging_boost_summary"
+        android:defaultValue="false"
+        android:dependency="fan_main_switch" />
+
+    <androidx.preference.SwitchPreferenceCompat
+        android:key="follow_screen_state"
+        android:title="@string/follow_screen_state_title"
+        android:summary="@string/follow_screen_state_summary"
+        android:defaultValue="false"
+        android:dependency="fan_main_switch" />
+
+    <Preference
+        android:key="per_app_fan_speed"
+        android:title="@string/per_app_fan_speed_title"
+        android:dependency="fan_main_switch" />
+
+</PreferenceScreen>

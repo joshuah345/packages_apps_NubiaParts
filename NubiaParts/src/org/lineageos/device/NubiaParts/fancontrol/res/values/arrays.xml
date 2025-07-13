@@ -1,0 +1,9 @@
+<resources>
+
+    <!-- Therrmal zone temps in millicelsius -->
+     <string-array name="config_thermal_zone_temperature_thresholds" translatable="false" >
+        <item>35000</item>
+     </string-array>
+
+
+</resources>

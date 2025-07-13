@@ -1,0 +1,16 @@
+<resources>
+
+    <!-- Path to node for fan speed -->
+    <string name="fan_speed_node" translatable="false">/sys/kernel/fan/fan_speed_level</string>
+
+    <!-- Path to node for togglng fan -->
+    <string name="fan_toggle_node" translatable="false">/sys/kernel/fan/fan_enable</string>
+
+    <!-- Path to node for reading fast charging status -->
+    <string name="fast_charging_status_node" translatable="false">/sys/kernel/fan/fan_enable</string>
+
+    <!-- Expected value from node when device is fast charging -->
+    <string name="fast_charging_status_node_value" translatable="false">/sys/kernel/fan/fan_enable</string>
+
+
+</resources>

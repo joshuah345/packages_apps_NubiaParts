@@ -1,0 +1,22 @@
+<resources>
+
+    <!-- qs tile title -->
+    <string name="app_name">Fan Control</string>
+
+    <string name="tile_title" translatable="true">Cooling fan</string>
+
+    <string name="fan_summary">Cooling fan</string>
+
+    <string name="fan_main_switch_title" translatable="true">Enable cooling fan</string>
+
+    <string name="user_fan_speed_title" translatable="true">Fan speed</string>
+
+    <string name="follow_screen_state_title" translatable="true">Follow screen state</string>
+    <string name="follow_screen_state_summary" translatable="true">Turn off fan when the screen is off</string>
+
+    <string name="charging_boost_title" translatable="true">Charging boost</string>
+    <string name="charging_boost_summary" translatable="true">Boost fan to max speed when device is charging</string>
+
+    <string name="per_app_fan_speed_title" translatable="true">Per-app fan speed</string>
+
+</resources>
