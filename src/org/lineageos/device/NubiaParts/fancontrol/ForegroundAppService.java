@@ -13,10 +13,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.lineageos.device.NubiaParts.fancontrol.LockManager;
 
@@ -76,6 +81,21 @@ public class ForegroundAppService extends Service {
         this.registerReceiver(mIntentReceiver, filter);
     }
 
+    public String getAppNameFromPackage(Context context, String packageName) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            ApplicationInfo appInfo = pm.getApplicationInfo(packageName, 0);
+            return pm.getApplicationLabel(appInfo).toString();
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return null; // Package not found
+        }
+    }
+
+    private void showToast(String message) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show());
+    }
     private final TaskStackListener mTaskListener = new TaskStackListener() {
         @Override
         public void onTaskStackChanged() {
@@ -90,6 +110,10 @@ public class ForegroundAppService extends Service {
                             String fanSpeed = prefs.getString(foregroundApp, null);
                             if (fanSpeed != null) {
                                 FanController.setSpeed(getApplicationContext(), parseInt(fanSpeed));
+                                showToast("Set fan speed " + fanSpeed
+                                        + " for "
+                                        + getAppNameFromPackage(getApplicationContext(), foregroundApp));
+
                             }
                         } else {
                             FanController.applyUserSpeed(getApplicationContext());
