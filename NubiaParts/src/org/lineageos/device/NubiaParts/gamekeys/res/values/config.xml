@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- Path to file for left shoulder button operation mode -->
+    <string name="left_shoulder_mode_node">/sys/class/leds/sar0/mode_operation</string>
+
+    <!-- Path to file for right shoulder button operation mode -->
+    <string name="right_shoulder_mode_node">/sys/class/leds/sar1/mode_operation</string>
+
+    <!-- don't ask me why they are led devices... -->
+
+</resources>
