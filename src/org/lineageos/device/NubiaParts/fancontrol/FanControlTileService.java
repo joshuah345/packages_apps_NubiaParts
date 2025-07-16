@@ -53,7 +53,7 @@ public class FanControlTileService extends TileService {
             } else {
                 prefs.edit().putBoolean(Constants.USER_ENABLE_FAN_KEY, true).apply();
                 Intent intent = new Intent(context, FanService.class);
-                intent.setAction(Constants.INTENT_FAN_START);
+                intent.setAction(Constants.INTENT_FAN_RELOAD);
                 context.startService(intent);
                 tile.setSubtitle("On (Speed: " + FanController.getSpeed() + ")");
                 tile.setState(Tile.STATE_ACTIVE);
