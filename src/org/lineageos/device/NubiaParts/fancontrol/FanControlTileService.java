@@ -23,12 +23,16 @@ public class FanControlTileService extends TileService {
             Constants.FAN_PREF_NAME, Context.MODE_PRIVATE);
         Tile tile = getQsTile();
         tile.setLabel(context.getString(R.string.tile_title));
-        if (prefs.getBoolean(Constants.USER_ENABLE_FAN_KEY, false)) {
-            tile.setState(Tile.STATE_ACTIVE);
-            tile.setSubtitle("On (Speed: " + FanController.getSpeed() + ")");
+        if (FanController.getSpeed() != null) {
+            if (prefs.getBoolean(Constants.USER_ENABLE_FAN_KEY, false)) {
+                tile.setState(Tile.STATE_ACTIVE);
+                tile.setSubtitle("On (Speed: " + FanController.getSpeed() + ")");
+            } else {
+                tile.setState(Tile.STATE_INACTIVE);
+                tile.setSubtitle("Off");  
+            }
         } else {
-            tile.setState(Tile.STATE_INACTIVE);
-            tile.setSubtitle("Off");  
+            tile.setState(Tile.STATE_UNAVAILABLE);
         }
         tile.updateTile();
     }

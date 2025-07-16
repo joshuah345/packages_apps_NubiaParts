@@ -52,12 +52,17 @@ public class GameKeyTileService extends TileService {
             Constants.PREF_KEY, Context.MODE_PRIVATE);
         Tile tile = getQsTile();
         tile.setLabel("Shoulder Buttons");
-        if (prefs.getBoolean(Constants.USER_ENABLE_GAME_KEY_PREF, false)) {
-            tile.setState(Tile.STATE_ACTIVE);
-            tile.setSubtitle("On");  
+        if (Utils.readLine(Constants.LEFT_SHOULDER) != null 
+        && Utils.readLine(Constants.RIGHT_SHOULDER) != null) {
+            if (prefs.getBoolean(Constants.USER_ENABLE_GAME_KEY_PREF, false)) {
+                tile.setState(Tile.STATE_ACTIVE);
+                tile.setSubtitle("On");  
+            } else {
+                tile.setState(Tile.STATE_INACTIVE);
+                tile.setSubtitle("Off");  
+            }
         } else {
-            tile.setState(Tile.STATE_INACTIVE);
-            tile.setSubtitle("Off");  
+            tile.setState(Tile.STATE_UNAVAILABLE);
         }
         tile.updateTile();
     }
