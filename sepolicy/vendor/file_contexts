@@ -1,7 +1,2 @@
 # Fan
 /sys/class/leds/fan(/.*)?   u:object_r:sysfs_fan:s0
-/sys/kernel/fan(/.*)?       u:object_r:sysfs_fan:s0
-
-# Touch Game Keys (Shoulder buttons)
-/sys/devices/platform/soc/9c0000.qcom,qupv3_i2c_geni_se/99c000.i2c/i2c-[0-9]+/[0-9]+-0012/leds/sar1(/.*)? u:object_r:sysfs_gamekey:s0
-/sys/devices/platform/soc/9c0000.qcom,qupv3_i2c_geni_se/9a0000.i2c/i2c-[0-9]+/[0-9]+-0013/leds/sar0(/.*)? u:object_r:sysfs_gamekey:s0
