@@ -1,0 +1,2 @@
+# Nubia Parts 
+user=system seinfo=platform isPrivApp=true name=org.lineageos.device.NubiaParts.* domain=nubia_parts type=system_app_data_file levelFrom=all 
