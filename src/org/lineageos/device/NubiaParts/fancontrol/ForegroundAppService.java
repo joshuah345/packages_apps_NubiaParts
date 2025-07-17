@@ -27,39 +27,38 @@ import org.lineageos.device.NubiaParts.fancontrol.LockManager;
 
 public class ForegroundAppService extends Service {
 
-    private static final String TAG = "ThermalService";
+    private static final String TAG = "ForegroundAppService";
     private static final boolean DEBUG = false;
 
     private String mPreviousApp;
     private SharedPreferences prefs;
 
-    public static boolean isRunning;
+    public static boolean isRunning = false;
 
     private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            mPreviousApp = "";
              prefs = context.getApplicationContext().getSharedPreferences(
                     Constants.FAN_PREF_NAME, Context.MODE_PRIVATE);
+             mPreviousApp = " ";
         }
     };
 
     @Override
     public void onCreate() {
-        if (DEBUG) Log.d(TAG, "Creating service");
-        try {
-            ActivityTaskManager.getService().registerTaskStackListener(mTaskListener);
-        } catch (RemoteException e) {
-            // Do nothing
-        }
-        registerReceiver();
-        isRunning = true;
         super.onCreate();
+        isRunning = true;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (DEBUG) Log.d(TAG, "Starting service");
+        try {
+            ActivityTaskManager.getService().registerTaskStackListener(mTaskListener);
+        } catch (RemoteException e) {
+            Log.d(TAG, "Unable to register TaskStackListener");
+        }
+        registerReceiver();
         return START_STICKY;
     }
 
@@ -70,8 +69,17 @@ public class ForegroundAppService extends Service {
 
     @Override
     public void onDestroy() {
+        try {
+            this.unregisterReceiver(mIntentReceiver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            ActivityTaskManager.getService().unregisterTaskStackListener(mTaskListener);
+        } catch (RemoteException e) {
+            // listener wasn't registered
+        }
         super.onDestroy();
-        isRunning = false;
     }
 
     private void registerReceiver() {
@@ -79,6 +87,22 @@ public class ForegroundAppService extends Service {
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         this.registerReceiver(mIntentReceiver, filter);
+    }
+
+    public void cancelAllToasts() {
+
+        new Handler(Looper.getMainLooper()).post(() -> {
+            try {
+                Toast dummyToast = Toast.makeText(
+                        getApplicationContext(),
+                        "",
+                        Toast.LENGTH_SHORT
+                );
+                dummyToast.cancel();
+            } catch (Exception e) {
+                Log.e("ToastUtils", "Failed to cancel Toasts", e);
+            }
+        });
     }
 
     public String getAppNameFromPackage(Context context, String packageName) {
@@ -105,18 +129,25 @@ public class ForegroundAppService extends Service {
                 if (focusedTask != null && focusedTask.topActivity != null) {
                     ComponentName taskComponentName = focusedTask.topActivity;
                     String foregroundApp = taskComponentName.getPackageName();
+                    Log.d(TAG,"NEW foreground app" + foregroundApp);
                     if (!foregroundApp.equals(mPreviousApp)) {
                         if (prefs.contains(foregroundApp)) {
+                            Log.d(TAG, foregroundApp + " found in speed list");
                             String fanSpeed = prefs.getString(foregroundApp, null);
                             if (fanSpeed != null) {
+                                Log.d(TAG, "Setting fan speed for " + foregroundApp);
                                 FanController.setSpeed(getApplicationContext(), parseInt(fanSpeed));
-                                showToast("Set fan speed " + fanSpeed
-                                        + " for "
-                                        + getAppNameFromPackage(getApplicationContext(), foregroundApp));
-
+                                cancelAllToasts();
+                                showToast("Set fan speed " + fanSpeed + " for "
+                                + getAppNameFromPackage(getApplicationContext(), foregroundApp));
                             }
                         } else {
-                            FanController.applyUserSpeed(getApplicationContext());
+                            if (!FanController.getSpeed().equals(FanController.getUserSpeed(getApplicationContext())))
+                            {
+                                FanController.applyUserSpeed(getApplicationContext());
+                                cancelAllToasts();
+                                showToast("Reset fan speed to " + FanController.getUserSpeed(getApplicationContext()));
+                            }
                         }
                         mPreviousApp = foregroundApp;
                     }

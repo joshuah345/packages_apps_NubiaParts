@@ -37,6 +37,13 @@ public class FanController {
         return true;
     }
 
+    public static String getUserSpeed(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(
+                Constants.FAN_PREF_NAME, Context.MODE_PRIVATE);
+
+        return String.valueOf(prefs.getInt(Constants.USER_FAN_SPEED_KEY, 0));
+    }
+
     public static boolean applyUserSpeed(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(
                 Constants.FAN_PREF_NAME, Context.MODE_PRIVATE);
