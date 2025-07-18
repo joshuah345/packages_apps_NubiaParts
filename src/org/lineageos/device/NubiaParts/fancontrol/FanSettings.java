@@ -94,19 +94,15 @@ public class FanSettings extends PreferenceFragmentCompat
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key) {
-            case Constants.USER_ENABLE_FAN_KEY:
-                boolean value = sharedPreferences.getBoolean(key, false);
-                if (!value) {
-                    sendFanServiceIntent(requireContext(),2);
-                } else {
-                    sendFanServiceIntent(requireContext(),1);
-                }
-                break;
-            case null:
-                break;
-            default:
-                sendFanServiceIntent(requireContext(), 3);
+        if (key.equals(Constants.USER_ENABLE_FAN_KEY)) {
+            boolean value = sharedPreferences.getBoolean(key, false);
+            if (!value) {
+                sendFanServiceIntent(requireContext(), 2);
+            } else {
+                sendFanServiceIntent(requireContext(), 1);
+            }
+        } else {
+            sendFanServiceIntent(requireContext(), 3);
         }
     }
 
