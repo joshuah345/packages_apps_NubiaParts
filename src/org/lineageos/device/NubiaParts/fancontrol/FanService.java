@@ -1,6 +1,7 @@
 package org.lineageos.device.NubiaParts.fancontrol;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -58,21 +59,23 @@ public class FanService extends Service {
         SharedPreferences prefs = getApplicationContext()
                 .getSharedPreferences(Constants.FAN_PREF_NAME, Context.MODE_PRIVATE);
 
+        willChargeBoost = prefs.getBoolean(Constants.FAN_CHARGING_BOOST_KEY, false);
         followScreenState = prefs.getBoolean(Constants.SCREEN_STATE_FAN_KEY, false);
         mScreenStateReceiver = new ScreenStateReceiver();
         mChargingMonitor = new ChargingMonitor();
         controlFgAppService(true);
         Log.d(TAG, "Started ForegroundAppService");
         LockManager.unlockFan(getApplicationContext());
-        FanController.applyUserSpeed(getApplicationContext());
 
-        IntentFilter chargingFilter = new IntentFilter();
-        chargingFilter.addAction(Intent.ACTION_POWER_CONNECTED);
-        chargingFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-        chargingFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        registerReceiver(mChargingMonitor, chargingFilter);
-        Log.d(TAG, "Started ChargingMonitor");
-
+        if (willChargeBoost) {
+            IntentFilter chargingFilter = new IntentFilter();
+            chargingFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+            chargingFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+            registerReceiver(mChargingMonitor, chargingFilter);
+            Log.d(TAG, "Started ChargingMonitor");
+        } else {
+           deregisterReceiver(mChargingMonitor);
+        }
 
         if (followScreenState) {
             IntentFilter screenStateFilter = new IntentFilter();
@@ -80,11 +83,7 @@ public class FanService extends Service {
             screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
             registerReceiver(mScreenStateReceiver, screenStateFilter);
         } else {
-            try {
-                context.unregisterReceiver(mScreenStateReceiver);
-            } catch (IllegalArgumentException e) {
-                // receiver wasn't registered yet
-            }
+           deregisterReceiver(mScreenStateReceiver);
         }
         // Ready to run fan
         FanController.toggle(true);
@@ -102,17 +101,29 @@ public class FanService extends Service {
         }
     }
 
+    private void deregisterReceiver(BroadcastReceiver br) {
+        try {
+            context.unregisterReceiver(br);
+        } catch (IllegalArgumentException e) {
+            // receiver wasn't registered yet
+        }
+    }
+
+    @Override
+    public void onDestroy(){
+        stopAll();
+        super.onDestroy();
+    }
+
     private void stopAll() {
         FanController.toggle(false);
         Log.d(TAG, "Disabling fan...");
         LockManager.unlockFan(context);
         Log.d(TAG, "Clearing all existing fan locks..");
         controlFgAppService(false);
-        try {
-            context.unregisterReceiver(mScreenStateReceiver);
-        } catch (IllegalArgumentException e) {
-            // receiver wasn't registered yet
-        }
+        Log.d(TAG, "Attempting to unregister ScreenStateReceiver...");
+        deregisterReceiver(mScreenStateReceiver);
+        Log.d(TAG, "Attempting to unregister ChargingMonitor...");
+        deregisterReceiver(mChargingMonitor);
     }
-
 }

@@ -13,32 +13,34 @@ public class ChargingMonitor extends BroadcastReceiver {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private boolean willBoostOnCharge;
     private boolean fanBoosted = false;
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryStatus = context.registerReceiver(null, batteryFilter);
+        String action = intent.getAction();
 
-        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-        boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                status == BatteryManager.BATTERY_STATUS_FULL;
-        SharedPreferences prefs = context.getApplicationContext().getSharedPreferences(
-                Constants.FAN_PREF_NAME, Context.MODE_PRIVATE);
-        willBoostOnCharge = prefs.getBoolean(Constants.FAN_CHARGING_BOOST_KEY, false);
+        if (Intent.ACTION_POWER_CONNECTED.equals(action)) {
+            Log.d("ChargingStateReceiver", "Power connected");
+            boostFan(true, context);
+        } else if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
+            Log.d("ChargingStateReceiver", "Power disconnected");
+            boostFan(false, context);
+        }
 
-        if (isCharging && willBoostOnCharge) {
-            LockManager.lockFan(context, Constants.FAN_SPEED_MAX, TAG);
+    }
+
+    private void boostFan(boolean bool, Context context) {
+        if (bool) {
             FanController.setSpeed(context, Constants.FAN_SPEED_MAX);
             fanBoosted = true;
-        } else if (!isCharging || fanBoosted) {
-            if (LockManager.getLockReason(context).equals(TAG)) {
-                LockManager.unlockFan(context);
+        } else {
+                FanController.applyUserSpeed(context);
+                fanBoosted = false;
             }
-            FanController.applyUserSpeed(context);
-            fanBoosted = false;
         }
-    }
 }
+
+
+
+
