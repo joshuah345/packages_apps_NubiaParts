@@ -41,24 +41,30 @@ public class ForegroundAppService extends Service {
              prefs = context.getApplicationContext().getSharedPreferences(
                     Constants.FAN_PREF_NAME, Context.MODE_PRIVATE);
              mPreviousApp = " ";
+
+            if (!FanController.getSpeed().equals(FanController.getUserSpeed(
+                    getApplicationContext()))) {
+                FanController.applyUserSpeed(getApplicationContext());
+            }
         }
     };
 
     @Override
     public void onCreate() {
         super.onCreate();
-        isRunning = true;
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (DEBUG) Log.d(TAG, "Starting service");
         try {
             ActivityTaskManager.getService().registerTaskStackListener(mTaskListener);
         } catch (RemoteException e) {
             Log.d(TAG, "Unable to register TaskStackListener");
         }
         registerReceiver();
+        isRunning = true;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (DEBUG) Log.d(TAG, "Starting service");
+        isRunning = true;
         return START_STICKY;
     }
 
@@ -67,25 +73,9 @@ public class ForegroundAppService extends Service {
         return null;
     }
 
-    @Override
-    public void onDestroy() {
-        try {
-            this.unregisterReceiver(mIntentReceiver);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            ActivityTaskManager.getService().unregisterTaskStackListener(mTaskListener);
-        } catch (RemoteException e) {
-            // listener wasn't registered
-        }
-        super.onDestroy();
-    }
-
     private void registerReceiver() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
         this.registerReceiver(mIntentReceiver, filter);
     }
 
@@ -118,8 +108,10 @@ public class ForegroundAppService extends Service {
 
     private void showToast(String message) {
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(() -> Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show());
+        handler.post(() ->
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show());
     }
+
     private final TaskStackListener mTaskListener = new TaskStackListener() {
         @Override
         public void onTaskStackChanged() {
@@ -131,6 +123,7 @@ public class ForegroundAppService extends Service {
                     String foregroundApp = taskComponentName.getPackageName();
                     Log.d(TAG,"NEW foreground app" + foregroundApp);
                     if (!foregroundApp.equals(mPreviousApp)) {
+                        mPreviousApp = foregroundApp;
                         if (prefs.contains(foregroundApp)) {
                             Log.d(TAG, foregroundApp + " found in speed list");
                             String fanSpeed = prefs.getString(foregroundApp, null);
@@ -142,14 +135,16 @@ public class ForegroundAppService extends Service {
                                 + getAppNameFromPackage(getApplicationContext(), foregroundApp));
                             }
                         } else {
-                            if (!FanController.getSpeed().equals(FanController.getUserSpeed(getApplicationContext())))
+                            if (!FanController.getSpeed().equals(
+                                    FanController.getUserSpeed(getApplicationContext())))
                             {
                                 FanController.applyUserSpeed(getApplicationContext());
                                 cancelAllToasts();
-                                showToast("Reset fan speed to " + FanController.getUserSpeed(getApplicationContext()));
+                                showToast("Reset fan speed to " +
+                                        FanController.getUserSpeed(getApplicationContext()));
                             }
                         }
-                        mPreviousApp = foregroundApp;
+
                     }
                 }
             } catch (Exception e) {}
